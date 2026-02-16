@@ -1,0 +1,608 @@
+{% extends 'base.html' %}
+
+{% block title %}Placement Officer Dashboard - Campus Placement System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Sidebar - Quick Actions and Season Info -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i> Placement Officer</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle bg-primary text-white mx-auto mb-3">
+                        {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+                    </div>
+                    <h4 class="mb-1">{{ request.user.get_full_name }}</h4>
+                    <p class="text-muted">Placement Officer</p>
+                </div>
+                
+                <h6 class="border-bottom pb-2 mb-3">Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'create_announcement' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-bullhorn me-2"></i> Create Announcement
+                    </a>
+                    <a href="{% url 'create_event' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-calendar-plus me-2"></i> Schedule Event
+                    </a>
+                    <a href="{% url 'statistics' %}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar me-2"></i> View Statistics
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Current Placement Season</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if current_season %}
+                    <h4 class="text-center mb-3">{{ current_season.year }}</h4>
+                    <div class="row text-center mb-3">
+                        <div class="col-6 border-end">
+                            <div class="h6 mb-0">Start Date</div>
+                            <div>{{ current_season.start_date|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h6 mb-0">End Date</div>
+                            <div>{{ current_season.end_date|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <a href="{% url 'statistics' %}" class="btn btn-outline-primary">View Season Statistics</a>
+                    </div>
+                {% else %}
+                    <div class="text-center p-4">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-calendar fa-3x"></i>
+                        </div>
+                        <p>No active placement season.</p>
+                        <a href="{% url 'create_season' %}" class="btn btn-primary">Create Season</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Upcoming Events</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if events %}
+                    <div class="list-group list-group-flush">
+                        {% for event in events %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ event.title }}</h6>
+                                    <small class="text-muted">{{ event.date_time|date:"M d" }}</small>
+                                </div>
+                                <p class="mb-1">
+                                    <i class="fas fa-map-marker-alt text-danger me-1"></i> {{ event.location }}
+                                    <br>
+                                    <i class="fas fa-clock text-info me-1"></i> {{ event.date_time|date:"h:i A" }}
+                                </p>
+                                {% if event.company %}
+                                    <small class="text-muted">Company: {{ event.company.company_name }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center p-4">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-calendar-day fa-3x"></i>
+                        </div>
+                        <p>No upcoming events.</p>
+                        <a href="{% url 'create_event' %}" class="btn btn-sm btn-primary">Create Event</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Stats Overview Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-primary text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Students</h6>
+                                <h3 class="mb-0">{{ total_students }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-info text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Companies</h6>
+                                <h3 class="mb-0">{{ total_companies }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-success text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Active Jobs</h6>
+                                <h3 class="mb-0">{{ active_jobs }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-warning text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Applications</h6>
+                                <h3 class="mb-0">{{ application_stats.total }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Department-wise Placement Statistics -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Department-wise Placement Statistics</h5>
+                <a href="{% url 'statistics' %}" class="btn btn-sm btn-outline-primary">View Details</a>
+            </div>
+            <div class="card-body">
+                {% if department_stats %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Total Students</th>
+                                    <th>Placed</th>
+                                    <th>Placement %</th>
+                                    <th>Avg. Package</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in department_stats %}
+                                    <tr>
+                                        <td>{{ stat.department }}</td>
+                                        <td>{{ stat.total_students }}</td>
+                                        <td>{{ stat.placed_students }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 10px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: {{ stat.placement_percentage }}%;" 
+                                                     aria-valuenow="{{ stat.placement_percentage }}" 
+                                                     aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <small>{{ stat.placement_percentage|floatformat:1 }}%</small>
+                                        </td>
+                                        <td>
+                                            {% if stat.average_package %}
+                                                ${{ stat.average_package|floatformat:0 }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center p-4">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-chart-pie fa-3x"></i>
+                        </div>
+                        <p>No statistics available for current season.</p>
+                        {% if current_season %}
+                            <a href="{% url 'update_statistics' %}" class="btn btn-primary">Add Statistics</a>
+                        {% else %}
+                            <a href="{% url 'create_season' %}" class="btn btn-primary">Create Season</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Application Status Overview -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Application Status Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <canvas id="applicationStatusChart" height="200"></canvas>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="stats-summary">
+                            <div class="stat-item mb-3">
+                                <h6 class="mb-0">Total Applications</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="mb-0">{{ application_stats.total }}</h3>
+                                    <span class="badge bg-primary p-2">100%</span>
+                                </div>
+                            </div>
+                            <div class="stat-item mb-2">
+                                <h6 class="mb-0">Pending</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{ application_stats.pending }}</h5>
+                                    <span class="badge bg-secondary p-2">
+                                        {% if application_stats.total > 0 %}
+                                            {{ application_stats.pending|floatformat:0 }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="stat-item mb-2">
+                                <h6 class="mb-0">Shortlisted</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{ application_stats.shortlisted }}</h5>
+                                    <span class="badge bg-warning p-2">
+                                        {% if application_stats.total > 0 %}
+                                            {{ application_stats.shortlisted|floatformat:0 }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="stat-item mb-2">
+                                <h6 class="mb-0">Selected</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{ application_stats.selected }}</h5>
+                                    <span class="badge bg-success p-2">
+                                        {% if application_stats.total > 0 %}
+                                            {{ application_stats.selected|floatformat:0 }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="stat-item mb-2">
+                                <h6 class="mb-0">Rejected</h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{ application_stats.rejected }}</h5>
+                                    <span class="badge bg-danger p-2">
+                                        {% if application_stats.total > 0 %}
+                                            {{ application_stats.rejected|floatformat:0 }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity Tabs -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light">
+                <ul class="nav nav-tabs card-header-tabs" id="activityTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="jobs-tab" data-bs-toggle="tab" data-bs-target="#jobs" type="button" role="tab" aria-controls="jobs" aria-selected="true">
+                            Recent Jobs
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="applications-tab" data-bs-toggle="tab" data-bs-target="#applications" type="button" role="tab" aria-controls="applications" aria-selected="false">
+                            Recent Applications
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="interviews-tab" data-bs-toggle="tab" data-bs-target="#interviews" type="button" role="tab" aria-controls="interviews" aria-selected="false">
+                            Upcoming Interviews
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-0">
+                <div class="tab-content" id="activityTabsContent">
+                    <!-- Recent Jobs Tab -->
+                    <div class="tab-pane fade show active" id="jobs" role="tabpanel" aria-labelledby="jobs-tab">
+                        {% if recent_jobs %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Company</th>
+                                            <th>Position</th>
+                                            <th>Type</th>
+                                            <th>Posted</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for job in recent_jobs %}
+                                            <tr>
+                                                <td>{{ job.company.company_name }}</td>
+                                                <td>
+                                                    <a href="{% url 'job_detail' job.id %}" class="text-decoration-none">
+                                                        {{ job.title }}
+                                                    </a>
+                                                </td>
+                                                <td>{{ job.get_job_type_display }}</td>
+                                                <td>{{ job.created_at|date:"M d, Y" }}</td>
+                                                <td>
+                                                    <span class="badge {% if job.status == 'open' %}bg-success
+                                                                 {% elif job.status == 'closed' %}bg-danger
+                                                                 {% else %}bg-secondary{% endif %}">
+                                                        {{ job.get_status_display }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center p-4">
+                                <div class="text-muted mb-3">
+                                    <i class="fas fa-briefcase fa-3x"></i>
+                                </div>
+                                <p>No recent job postings.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Recent Applications Tab -->
+                    <div class="tab-pane fade" id="applications" role="tabpanel" aria-labelledby="applications-tab">
+                        {% if recent_applications %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Position</th>
+                                            <th>Company</th>
+                                            <th>Applied On</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for application in recent_applications %}
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar me-2 bg-primary text-white rounded-circle">
+                                                            {{ application.student.user.first_name|slice:":1" }}{{ application.student.user.last_name|slice:":1" }}
+                                                        </div>
+                                                        <span>{{ application.student.user.get_full_name }}</span>
+                                                    </div>
+                                                </td>
+                                                <td>{{ application.job.title }}</td>
+                                                <td>{{ application.job.company.company_name }}</td>
+                                                <td>{{ application.applied_at|date:"M d, Y" }}</td>
+                                                <td>
+                                                    <span class="badge {% if application.status == 'applied' %}bg-primary
+                                                                 {% elif application.status == 'under_review' %}bg-info
+                                                                 {% elif application.status == 'shortlisted' %}bg-warning
+                                                                 {% elif application.status == 'rejected' %}bg-danger
+                                                                 {% elif application.status == 'selected' %}bg-success
+                                                                 {% endif %}">
+                                                        {{ application.get_status_display }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center p-4">
+                                <div class="text-muted mb-3">
+                                    <i class="fas fa-file-alt fa-3x"></i>
+                                </div>
+                                <p>No recent applications.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Upcoming Interviews Tab -->
+                    <div class="tab-pane fade" id="interviews" role="tabpanel" aria-labelledby="interviews-tab">
+                        {% if upcoming_interviews %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Company</th>
+                                            <th>Position</th>
+                                            <th>Date & Time</th>
+                                            <th>Type</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for interview in upcoming_interviews %}
+                                            <tr>
+                                                <td>{{ interview.application.student.user.get_full_name }}</td>
+                                                <td>{{ interview.application.job.company.company_name }}</td>
+                                                <td>{{ interview.application.job.title }}</td>
+                                                <td>
+                                                    <div>{{ interview.date_time|date:"M d, Y" }}</div>
+                                                    <small class="text-muted">{{ interview.date_time|date:"h:i A" }}</small>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {% if interview.interview_type == 'online' %}bg-info text-dark
+                                                                 {% elif interview.interview_type == 'in_person' %}bg-secondary
+                                                                 {% else %}bg-light text-dark{% endif %}">
+                                                        {{ interview.get_interview_type_display }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center p-4">
+                                <div class="text-muted mb-3">
+                                    <i class="fas fa-calendar-alt fa-3x"></i>
+                                </div>
+                                <p>No upcoming interviews.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Announcements -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Announcements</h5>
+                <a href="{% url 'create_announcement' %}" class="btn btn-sm btn-outline-primary">Create New</a>
+            </div>
+            <div class="card-body p-0">
+                {% if announcements %}
+                    <div class="list-group list-group-flush">
+                        {% for announcement in announcements %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ announcement.title }}</h6>
+                                    <small class="text-muted">{{ announcement.created_at|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-1">{{ announcement.content|truncatewords:30 }}</p>
+                                <small>
+                                    For: 
+                                    <span class="badge bg-info">
+                                        {% if announcement.audience == 'all' %}
+                                            All Users
+                                        {% elif announcement.audience == 'students' %}
+                                            Students
+                                        {% elif announcement.audience == 'companies' %}
+                                            Companies
+                                        {% elif announcement.audience == 'officers' %}
+                                            Placement Officers
+                                        {% endif %}
+                                    </span>
+                                </small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center p-4">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-bullhorn fa-3x"></i>
+                        </div>
+                        <p>No announcements yet.</p>
+                        <a href="{% url 'create_announcement' %}" class="btn btn-sm btn-primary">Create Announcement</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Application Status Chart
+        const applicationStatusChart = document.getElementById('applicationStatusChart');
+        
+        if (applicationStatusChart) {
+            new Chart(applicationStatusChart, {
+                type: 'pie',
+                data: {
+                    labels: ['Pending', 'Under Review', 'Shortlisted', 'Selected', 'Rejected'],
+                    datasets: [{
+                        data: [
+                            {{ application_stats.pending|default:0 }}, 
+                            {{ application_stats.under_review|default:0 }}, 
+                            {{ application_stats.shortlisted|default:0 }}, 
+                            {{ application_stats.selected|default:0 }}, 
+                            {{ application_stats.rejected|default:0 }}
+                        ],
+                        backgroundColor: [
+                            '#6c757d', // Secondary - Pending
+                            '#17a2b8', // Info - Under Review
+                            '#ffc107', // Warning - Shortlisted
+                            '#28a745', // Success - Selected
+                            '#dc3545'  // Danger - Rejected
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

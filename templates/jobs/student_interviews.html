@@ -1,0 +1,390 @@
+{% extends 'base.html' %}
+
+{% block title %}My Interviews - Campus Placement System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">My Interviews</h2>
+            <div class="d-flex align-items-center">
+                <form method="GET" class="d-flex me-2">
+                    <select name="status" class="form-select me-2" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option value="scheduled" {% if request.GET.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        <option value="rescheduled" {% if request.GET.status == 'rescheduled' %}selected{% endif %}>Rescheduled</option>
+                    </select>
+                    <select name="date_filter" class="form-select me-2" onchange="this.form.submit()">
+                        <option value="upcoming" {% if request.GET.date_filter == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                        <option value="past" {% if request.GET.date_filter == 'past' %}selected{% endif %}>Past</option>
+                        <option value="all" {% if request.GET.date_filter == 'all' %}selected{% endif %}>All Dates</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                {% if interviews %}
+                    <div class="interview-list">
+                        {% for interview in interviews %}
+                            <div class="interview-card p-4 border-bottom">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="company-avatar me-3 bg-primary text-white rounded-circle">
+                                                {{ interview.application.job.company.company_name|slice:":1" }}
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0">{{ interview.application.job.title }}</h5>
+                                                <p class="mb-0 text-muted">{{ interview.application.job.company.company_name }}</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="interview-details">
+                                            <div class="row mb-2">
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="icon-box bg-light rounded-circle p-2 me-2">
+                                                            <i class="fas fa-calendar-alt text-primary"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div>{{ interview.date_time|date:"l, M d, Y" }}</div>
+                                                            <div class="text-muted">{{ interview.date_time|date:"h:i A" }}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="icon-box bg-light rounded-circle p-2 me-2">
+                                                            {% if interview.interview_type == 'online' %}
+                                                                <i class="fas fa-video text-primary"></i>
+                                                            {% elif interview.interview_type == 'in_person' %}
+                                                                <i class="fas fa-building text-primary"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-phone text-primary"></i>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div>
+                                                            <div>{{ interview.get_interview_type_display }} Interview</div>
+                                                            {% if interview.interviewer %}
+                                                                <div class="text-muted">Interviewer: {{ interview.interviewer }}</div>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mb-2">
+                                                {% if interview.interview_type == 'online' and interview.meeting_link %}
+                                                    <div class="col-md-6">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="icon-box bg-light rounded-circle p-2 me-2">
+                                                                <i class="fas fa-link text-primary"></i>
+                                                            </div>
+                                                            <div>
+                                                                <div>Meeting Link</div>
+                                                                <div class="text-muted">
+                                                                    <a href="{{ interview.meeting_link }}" target="_blank">Join Meeting</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                                
+                                                {% if interview.interview_type == 'in_person' and interview.location %}
+                                                    <div class="col-md-6">
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="icon-box bg-light rounded-circle p-2 me-2">
+                                                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                                            </div>
+                                                            <div>
+                                                                <div>Location</div>
+                                                                <div class="text-muted">{{ interview.location }}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            {% if interview.notes %}
+                                                <div class="alert alert-light mt-3">
+                                                    <h6 class="mb-2"><i class="fas fa-sticky-note me-2 text-primary"></i> Notes:</h6>
+                                                    <p class="mb-0">{{ interview.notes }}</p>
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {% if interview.status == 'completed' and interview.feedback %}
+                                                <div class="alert alert-light mt-3">
+                                                    <h6 class="mb-2"><i class="fas fa-comment-alt me-2 text-primary"></i> Feedback:</h6>
+                                                    <p class="mb-0">{{ interview.feedback }}</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-md-end">
+                                        <div class="d-flex flex-column h-100 align-items-end justify-content-between">
+                                            <div>
+                                                <span class="badge {% if interview.status == 'scheduled' %}bg-primary
+                                                             {% elif interview.status == 'completed' %}bg-success
+                                                             {% elif interview.status == 'cancelled' %}bg-danger
+                                                             {% elif interview.status == 'rescheduled' %}bg-warning
+                                                             {% endif %} p-2 fs-6 mb-3">
+                                                    {{ interview.get_status_display }}
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="mt-3">
+                                                <button type="button" class="btn btn-outline-primary" 
+                                                        data-bs-toggle="modal" data-bs-target="#interviewDetails{{ interview.id }}">
+                                                    <i class="fas fa-info-circle me-1"></i> View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Interview Details Modal -->
+                            <div class="modal fade" id="interviewDetails{{ interview.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Interview Details</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-4">
+                                                <div class="col-md-6">
+                                                    <h5 class="border-bottom pb-2 mb-3">Job Information</h5>
+                                                    <dl class="row">
+                                                        <dt class="col-sm-4">Position</dt>
+                                                        <dd class="col-sm-8">{{ interview.application.job.title }}</dd>
+                                                        
+                                                        <dt class="col-sm-4">Company</dt>
+                                                        <dd class="col-sm-8">{{ interview.application.job.company.company_name }}</dd>
+                                                        
+                                                        <dt class="col-sm-4">Job Type</dt>
+                                                        <dd class="col-sm-8">{{ interview.application.job.get_job_type_display }}</dd>
+                                                        
+                                                        <dt class="col-sm-4">Location</dt>
+                                                        <dd class="col-sm-8">{{ interview.application.job.location }}</dd>
+                                                    </dl>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <h5 class="border-bottom pb-2 mb-3">Interview Information</h5>
+                                                    <dl class="row">
+                                                        <dt class="col-sm-4">Date</dt>
+                                                        <dd class="col-sm-8">{{ interview.date_time|date:"l, F d, Y" }}</dd>
+                                                        
+                                                        <dt class="col-sm-4">Time</dt>
+                                                        <dd class="col-sm-8">{{ interview.date_time|date:"h:i A" }}</dd>
+                                                        
+                                                        <dt class="col-sm-4">Type</dt>
+                                                        <dd class="col-sm-8">{{ interview.get_interview_type_display }}</dd>
+                                                        
+                                                        <dt class="col-sm-4">Status</dt>
+                                                        <dd class="col-sm-8">
+                                                            <span class="badge {% if interview.status == 'scheduled' %}bg-primary
+                                                                         {% elif interview.status == 'completed' %}bg-success
+                                                                         {% elif interview.status == 'cancelled' %}bg-danger
+                                                                         {% elif interview.status == 'rescheduled' %}bg-warning
+                                                                         {% endif %}">
+                                                                {{ interview.get_status_display }}
+                                                            </span>
+                                                        </dd>
+                                                        
+                                                        {% if interview.interviewer %}
+                                                            <dt class="col-sm-4">Interviewer</dt>
+                                                            <dd class="col-sm-8">{{ interview.interviewer }}</dd>
+                                                        {% endif %}
+                                                    </dl>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <h5 class="border-bottom pb-2 mb-3">Details</h5>
+                                                    
+                                                    {% if interview.interview_type == 'online' and interview.meeting_link %}
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Meeting Link</label>
+                                                            <div class="input-group">
+                                                                <input type="text" class="form-control" value="{{ interview.meeting_link }}" readonly>
+                                                                <a href="{{ interview.meeting_link }}" target="_blank" class="btn btn-outline-primary">
+                                                                    <i class="fas fa-external-link-alt"></i> Join Meeting
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if interview.interview_type == 'in_person' and interview.location %}
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Location</label>
+                                                            <p>{{ interview.location }}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if interview.notes %}
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Notes</label>
+                                                            <div class="p-3 bg-light rounded">
+                                                                {{ interview.notes|linebreaks }}
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if interview.status == 'completed' and interview.feedback %}
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold">Feedback</label>
+                                                            <div class="p-3 bg-light rounded">
+                                                                {{ interview.feedback|linebreaks }}
+                                                            </div>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <h5 class="border-bottom pb-2 mb-3">Application Status</h5>
+                                                    <p>
+                                                        <span class="badge {% if interview.application.status == 'applied' %}bg-primary
+                                                                   {% elif interview.application.status == 'under_review' %}bg-info
+                                                                   {% elif interview.application.status == 'shortlisted' %}bg-warning
+                                                                   {% elif interview.application.status == 'rejected' %}bg-danger
+                                                                   {% elif interview.application.status == 'selected' %}bg-success
+                                                                   {% endif %} p-2 fs-6">
+                                                            {{ interview.application.get_status_display }}
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if interviews.paginator.num_pages > 1 %}
+                        <div class="d-flex justify-content-center py-3">
+                            <nav aria-label="Interviews pagination">
+                                <ul class="pagination">
+                                    {% if interviews.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ interviews.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for num in interviews.paginator.page_range %}
+                                        {% if interviews.number == num %}
+                                            <li class="page-item active">
+                                                <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% elif num > interviews.number|add:'-3' and num < interviews.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if interviews.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ interviews.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ interviews.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.date_filter %}&date_filter={{ request.GET.date_filter }}{% endif %}" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="text-center p-5">
+                        <div class="display-1 text-muted">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h4 class="mt-3">No Interviews Yet</h4>
+                        <p class="text-muted">You don't have any scheduled interviews at the moment.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-search me-1"></i> Find More Jobs
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .company-avatar {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+    }
+    
+    .interview-card {
+        transition: all 0.3s ease;
+    }
+    
+    .interview-card:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+{% endblock %}

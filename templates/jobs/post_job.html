@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if is_edit %}Edit Job{% else %}Post New Job{% endif %} - Campus Placement System
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    {% if is_edit %}
+                        <i class="fas fa-edit me-2"></i> Edit Job: {{ job.title }}
+                    {% else %}
+                        <i class="fas fa-plus-circle me-2"></i> Post New Job
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">Basic Information</h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Job Title</label>
+                            <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" 
+                                   class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.title.value|default:'' }}" required>
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                            <select name="{{ form.category.name }}" id="{{ form.category.id_for_label }}" 
+                                    class="form-select {% if form.category.errors %}is-invalid{% endif %}">
+                                <option value="">Select a category</option>
+                                {% for choice in form.category.field.queryset %}
+                                    <option value="{{ choice.id }}" 
+                                            {% if form.category.value|stringformat:'i' == choice.id|stringformat:'i' %}selected{% endif %}>
+                                        {{ choice.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.category.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.category.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.job_type.id_for_label }}" class="form-label">Job Type</label>
+                            <select name="{{ form.job_type.name }}" id="{{ form.job_type.id_for_label }}" 
+                                    class="form-select {% if form.job_type.errors %}is-invalid{% endif %}" required>
+                                <option value="">Select job type</option>
+                                {% for choice_id, choice_label in form.job_type.field.choices %}
+                                    {% if choice_id %}
+                                        <option value="{{ choice_id }}" 
+                                                {% if form.job_type.value == choice_id %}selected{% endif %}>
+                                            {{ choice_label }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% if form.job_type.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.job_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                            <input type="text" name="{{ form.location.name }}" id="{{ form.location.id_for_label }}" 
+                                   class="form-control {% if form.location.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.location.value|default:'' }}" required>
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.location.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">Job Details</h5>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Job Description</label>
+                            <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                                      class="form-control {% if form.description.errors %}is-invalid{% endif %}" 
+                                      rows="5" required>{{ form.description.value|default:'' }}</textarea>
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.requirements.id_for_label }}" class="form-label">Requirements</label>
+                            <textarea name="{{ form.requirements.name }}" id="{{ form.requirements.id_for_label }}" 
+                                      class="form-control {% if form.requirements.errors %}is-invalid{% endif %}" 
+                                      rows="5" required>{{ form.requirements.value|default:'' }}</textarea>
+                            {% if form.requirements.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.requirements.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.responsibilities.id_for_label }}" class="form-label">Responsibilities</label>
+                            <textarea name="{{ form.responsibilities.name }}" id="{{ form.responsibilities.id_for_label }}" 
+                                      class="form-control {% if form.responsibilities.errors %}is-invalid{% endif %}" 
+                                      rows="5" required>{{ form.responsibilities.value|default:'' }}</textarea>
+                            {% if form.responsibilities.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.responsibilities.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">Additional Information</h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.salary_range.id_for_label }}" class="form-label">Salary Range (Optional)</label>
+                            <input type="text" name="{{ form.salary_range.name }}" id="{{ form.salary_range.id_for_label }}" 
+                                   class="form-control {% if form.salary_range.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.salary_range.value|default:'' }}" placeholder="e.g., $50,000 - $70,000">
+                            {% if form.salary_range.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.salary_range.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.application_deadline.id_for_label }}" class="form-label">Application Deadline</label>
+                            <input type="date" name="{{ form.application_deadline.name }}" id="{{ form.application_deadline.id_for_label }}" 
+                                   class="form-control {% if form.application_deadline.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.application_deadline.value|date:'Y-m-d' }}" required>
+                            {% if form.application_deadline.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.application_deadline.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.positions_available.id_for_label }}" class="form-label">Positions Available</label>
+                            <input type="number" name="{{ form.positions_available.name }}" id="{{ form.positions_available.id_for_label }}" 
+                                   class="form-control {% if form.positions_available.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.positions_available.value|default:'1' }}" min="1" required>
+                            {% if form.positions_available.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.positions_available.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.min_cgpa.id_for_label }}" class="form-label">Minimum CGPA (Optional)</label>
+                            <input type="number" step="0.01" name="{{ form.min_cgpa.name }}" id="{{ form.min_cgpa.id_for_label }}" 
+                                   class="form-control {% if form.min_cgpa.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.min_cgpa.value|default:'' }}" min="0" max="10" placeholder="e.g., 7.5">
+                            {% if form.min_cgpa.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.min_cgpa.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                            <select name="{{ form.status.name }}" id="{{ form.status.id_for_label }}" 
+                                    class="form-select {% if form.status.errors %}is-invalid{% endif %}" required>
+                                {% for choice_id, choice_label in form.status.field.choices %}
+                                    <option value="{{ choice_id }}" 
+                                            {% if form.status.value == choice_id %}selected{% endif %}>
+                                        {{ choice_label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.status.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'manage_jobs' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            {% if is_edit %}Save Changes{% else %}Post Job{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

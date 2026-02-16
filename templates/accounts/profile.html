@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if user.is_student %}
+        Student Profile
+    {% elif user.is_company %}
+        Company Profile
+    {% endif %}
+    - Campus Placement System
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    {% if user.is_student %}
+                        <i class="fas fa-user-graduate me-2"></i> Student Profile
+                    {% elif user.is_company %}
+                        <i class="fas fa-building me-2"></i> Company Profile
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-2 mb-3">Basic Information</h5>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ user_form.username.id_for_label }}" class="form-label">Username</label>
+                            <input type="text" name="{{ user_form.username.name }}" id="{{ user_form.username.id_for_label }}" 
+                                   class="form-control {% if user_form.username.errors %}is-invalid{% endif %}" 
+                                   value="{{ user_form.username.value|default:'' }}" readonly>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ user_form.email.id_for_label }}" class="form-label">Email Address</label>
+                            <input type="email" name="{{ user_form.email.name }}" id="{{ user_form.email.id_for_label }}" 
+                                   class="form-control {% if user_form.email.errors %}is-invalid{% endif %}" 
+                                   value="{{ user_form.email.value|default:'' }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ user_form.first_name.id_for_label }}" class="form-label">First Name</label>
+                            <input type="text" name="{{ user_form.first_name.name }}" id="{{ user_form.first_name.id_for_label }}" 
+                                   class="form-control {% if user_form.first_name.errors %}is-invalid{% endif %}" 
+                                   value="{{ user_form.first_name.value|default:'' }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ user_form.last_name.id_for_label }}" class="form-label">Last Name</label>
+                            <input type="text" name="{{ user_form.last_name.name }}" id="{{ user_form.last_name.id_for_label }}" 
+                                   class="form-control {% if user_form.last_name.errors %}is-invalid{% endif %}" 
+                                   value="{{ user_form.last_name.value|default:'' }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ user_form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                            <input type="tel" name="{{ user_form.phone_number.name }}" id="{{ user_form.phone_number.id_for_label }}" 
+                                   class="form-control {% if user_form.phone_number.errors %}is-invalid{% endif %}" 
+                                   value="{{ user_form.phone_number.value|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    {% if user.is_student %}
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Academic Information</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.roll_number.id_for_label }}" class="form-label">Roll Number</label>
+                                <input type="text" name="{{ profile_form.roll_number.name }}" id="{{ profile_form.roll_number.id_for_label }}" 
+                                       class="form-control {% if profile_form.roll_number.errors %}is-invalid{% endif %}" 
+                                       value="{{ profile_form.roll_number.value|default:'' }}" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.department.id_for_label }}" class="form-label">Department</label>
+                                <input type="text" name="{{ profile_form.department.name }}" id="{{ profile_form.department.id_for_label }}" 
+                                       class="form-control {% if profile_form.department.errors %}is-invalid{% endif %}" 
+                                       value="{{ profile_form.department.value|default:'' }}" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.year_of_graduation.id_for_label }}" class="form-label">Year of Graduation</label>
+                                <input type="number" name="{{ profile_form.year_of_graduation.name }}" id="{{ profile_form.year_of_graduation.id_for_label }}" 
+                                       class="form-control {% if profile_form.year_of_graduation.errors %}is-invalid{% endif %}" 
+                                       value="{{ profile_form.year_of_graduation.value|default:'' }}" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.cgpa.id_for_label }}" class="form-label">CGPA</label>
+                                <input type="number" step="0.01" name="{{ profile_form.cgpa.name }}" id="{{ profile_form.cgpa.id_for_label }}" 
+                                       class="form-control {% if profile_form.cgpa.errors %}is-invalid{% endif %}" 
+                                       value="{{ profile_form.cgpa.value|default:'' }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Skills & Additional Information</h5>
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ profile_form.skills.id_for_label }}" class="form-label">Skills</label>
+                                <textarea name="{{ profile_form.skills.name }}" id="{{ profile_form.skills.id_for_label }}" 
+                                          class="form-control {% if profile_form.skills.errors %}is-invalid{% endif %}" 
+                                          rows="3">{{ profile_form.skills.value|default:'' }}</textarea>
+                                <small class="form-text text-muted">Separate skills with commas (e.g., Python, JavaScript, Machine Learning)</small>
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ profile_form.bio.id_for_label }}" class="form-label">Bio</label>
+                                <textarea name="{{ profile_form.bio.name }}" id="{{ profile_form.bio.id_for_label }}" 
+                                          class="form-control {% if profile_form.bio.errors %}is-invalid{% endif %}" 
+                                          rows="4">{{ profile_form.bio.value|default:'' }}</textarea>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.linkedin_profile.id_for_label }}" class="form-label">LinkedIn Profile</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fab fa-linkedin"></i></span>
+                                    <input type="url" name="{{ profile_form.linkedin_profile.name }}" id="{{ profile_form.linkedin_profile.id_for_label }}" 
+                                           class="form-control {% if profile_form.linkedin_profile.errors %}is-invalid{% endif %}" 
+                                           value="{{ profile_form.linkedin_profile.value|default:'' }}">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.github_profile.id_for_label }}" class="form-label">GitHub Profile</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fab fa-github"></i></span>
+                                    <input type="url" name="{{ profile_form.github_profile.name }}" id="{{ profile_form.github_profile.id_for_label }}" 
+                                           class="form-control {% if profile_form.github_profile.errors %}is-invalid{% endif %}" 
+                                           value="{{ profile_form.github_profile.value|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Resume Information</h5>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                {% if profile.resume %}
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-file-pdf me-2"></i> Resume uploaded!
+                                        <a href="{{ profile.resume.url }}" class="btn btn-sm btn-outline-success ms-2" target="_blank">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="{% url 'resume_builder' %}" class="btn btn-sm btn-outline-primary ms-2">
+                                            <i class="fas fa-edit"></i> Update
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i> No resume uploaded yet!
+                                        <a href="{% url 'resume_builder' %}" class="btn btn-sm btn-outline-primary ms-2">
+                                            <i class="fas fa-upload"></i> Upload Resume
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                    {% elif user.is_company %}
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">Company Details</h5>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.company_name.id_for_label }}" class="form-label">Company Name</label>
+                                <input type="text" name="{{ profile_form.company_name.name }}" id="{{ profile_form.company_name.id_for_label }}" 
+                                       class="form-control {% if profile_form.company_name.errors %}is-invalid{% endif %}" 
+                                       value="{{ profile_form.company_name.value|default:'' }}" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.industry.id_for_label }}" class="form-label">Industry</label>
+                                <input type="text" name="{{ profile_form.industry.name }}" id="{{ profile_form.industry.id_for_label }}" 
+                                       class="form-control {% if profile_form.industry.errors %}is-invalid{% endif %}" 
+                                       value="{{ profile_form.industry.value|default:'' }}" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.website.id_for_label }}" class="form-label">Website</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-globe"></i></span>
+                                    <input type="url" name="{{ profile_form.website.name }}" id="{{ profile_form.website.id_for_label }}" 
+                                           class="form-control {% if profile_form.website.errors %}is-invalid{% endif %}" 
+                                           value="{{ profile_form.website.value|default:'' }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ profile_form.established_year.id_for_label }}" class="form-label">Established Year</label>
+                                <input type="number" name="{{ profile_form.established_year.name }}" id="{{ profile_form.established_year.id_for_label }}" 
+                                       class="form-control {% if profile_form.established_year.errors %}is-invalid{% endif %}" 
+                                       value="{{ profile_form.established_year.value|default:'' }}">
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ profile_form.description.id_for_label }}" class="form-label">Company Description</label>
+                                <textarea name="{{ profile_form.description.name }}" id="{{ profile_form.description.id_for_label }}" 
+                                          class="form-control {% if profile_form.description.errors %}is-invalid{% endif %}" 
+                                          rows="4" required>{{ profile_form.description.value|default:'' }}</textarea>
+                            </div>
+                            
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ profile_form.address.id_for_label }}" class="form-label">Address</label>
+                                <textarea name="{{ profile_form.address.name }}" id="{{ profile_form.address.id_for_label }}" 
+                                          class="form-control {% if profile_form.address.errors %}is-invalid{% endif %}" 
+                                          rows="3" required>{{ profile_form.address.value|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% if user.is_student %}{% url 'student_dashboard' %}{% elif user.is_company %}{% url 'company_dashboard' %}{% endif %}" 
+                           class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

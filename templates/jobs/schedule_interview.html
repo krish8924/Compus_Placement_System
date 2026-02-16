@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}Schedule Interview - Campus Placement System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> Schedule Interview</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h5 class="border-bottom pb-2 mb-3">Application Details</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Student:</strong> {{ application.student.user.get_full_name }}</p>
+                            <p><strong>Department:</strong> {{ application.student.department }}</p>
+                            <p><strong>CGPA:</strong> {{ application.student.cgpa }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Position:</strong> {{ application.job.title }}</p>
+                            <p><strong>Company:</strong> {{ application.job.company.company_name }}</p>
+                            <p><strong>Job Type:</strong> {{ application.job.get_job_type_display }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.date_time.id_for_label }}" class="form-label">Date and Time</label>
+                            <input type="datetime-local" name="{{ form.date_time.name }}" id="{{ form.date_time.id_for_label }}" 
+                                   class="form-control {% if form.date_time.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.date_time.value|date:'Y-m-d\TH:i' }}" required>
+                            {% if form.date_time.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.date_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.interview_type.id_for_label }}" class="form-label">Interview Type</label>
+                            <select name="{{ form.interview_type.name }}" id="{{ form.interview_type.id_for_label }}" 
+                                    class="form-select {% if form.interview_type.errors %}is-invalid{% endif %}" required>
+                                <option value="">Select interview type</option>
+                                {% for choice_id, choice_label in form.interview_type.field.choices %}
+                                    {% if choice_id %}
+                                        <option value="{{ choice_id }}" 
+                                                {% if form.interview_type.value == choice_id %}selected{% endif %}>
+                                            {{ choice_label }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            {% if form.interview_type.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.interview_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3 location-field">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                            <input type="text" name="{{ form.location.name }}" id="{{ form.location.id_for_label }}" 
+                                   class="form-control {% if form.location.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.location.value|default:'' }}" placeholder="Enter physical location">
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.location.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Required for in-person interviews</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3 meeting-link-field">
+                            <label for="{{ form.meeting_link.id_for_label }}" class="form-label">Meeting Link</label>
+                            <input type="url" name="{{ form.meeting_link.name }}" id="{{ form.meeting_link.id_for_label }}" 
+                                   class="form-control {% if form.meeting_link.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.meeting_link.value|default:'' }}" placeholder="https://meet.example.com/...">
+                            {% if form.meeting_link.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.meeting_link.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Required for online interviews</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.interviewer.id_for_label }}" class="form-label">Interviewer</label>
+                            <input type="text" name="{{ form.interviewer.name }}" id="{{ form.interviewer.id_for_label }}" 
+                                   class="form-control {% if form.interviewer.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.interviewer.value|default:'' }}" placeholder="Name of the interviewer">
+                            {% if form.interviewer.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.interviewer.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                            <select name="{{ form.status.name }}" id="{{ form.status.id_for_label }}" 
+                                    class="form-select {% if form.status.errors %}is-invalid{% endif %}" required>
+                                {% for choice_id, choice_label in form.status.field.choices %}
+                                    <option value="{{ choice_id }}" 
+                                            {% if form.status.value == choice_id %}selected{% endif %}>
+                                        {{ choice_label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.status.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.status.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                        <textarea name="{{ form.notes.name }}" id="{{ form.notes.id_for_label }}" 
+                                  class="form-control {% if form.notes.errors %}is-invalid{% endif %}" 
+                                  rows="3" placeholder="Additional information for the candidate">{{ form.notes.value|default:'' }}</textarea>
+                        {% if form.notes.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.notes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'applications' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Schedule Interview</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show/hide fields based on interview type
+    document.addEventListener('DOMContentLoaded', function() {
+        const interviewTypeSelect = document.getElementById('{{ form.interview_type.id_for_label }}');
+        const locationField = document.querySelector('.location-field');
+        const meetingLinkField = document.querySelector('.meeting-link-field');
+        
+        function updateFields() {
+            const interviewType = interviewTypeSelect.value;
+            
+            if (interviewType === 'online') {
+                meetingLinkField.style.display = 'block';
+                document.getElementById('{{ form.meeting_link.id_for_label }}').setAttribute('required', 'required');
+                locationField.style.display = 'none';
+                document.getElementById('{{ form.location.id_for_label }}').removeAttribute('required');
+            } else if (interviewType === 'in_person') {
+                locationField.style.display = 'block';
+                document.getElementById('{{ form.location.id_for_label }}').setAttribute('required', 'required');
+                meetingLinkField.style.display = 'none';
+                document.getElementById('{{ form.meeting_link.id_for_label }}').removeAttribute('required');
+            } else if (interviewType === 'phone') {
+                locationField.style.display = 'none';
+                document.getElementById('{{ form.location.id_for_label }}').removeAttribute('required');
+                meetingLinkField.style.display = 'none';
+                document.getElementById('{{ form.meeting_link.id_for_label }}').removeAttribute('required');
+            } else {
+                locationField.style.display = 'block';
+                meetingLinkField.style.display = 'block';
+            }
+        }
+        
+        interviewTypeSelect.addEventListener('change', updateFields);
+        updateFields(); // Run on page load
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+
+{% block title %}Applications - Campus Placement System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">All Applications</h2>
+            <div class="d-flex align-items-center">
+                <form method="GET" class="d-flex me-2">
+                    <select name="status" class="form-select me-2" onchange="this.form.submit()">
+                        <option value="">All Statuses</option>
+                        <option value="applied" {% if request.GET.status == 'applied' %}selected{% endif %}>Applied</option>
+                        <option value="under_review" {% if request.GET.status == 'under_review' %}selected{% endif %}>Under Review</option>
+                        <option value="shortlisted" {% if request.GET.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                        <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="selected" {% if request.GET.status == 'selected' %}selected{% endif %}>Selected</option>
+                    </select>
+                </form>
+                <span class="ms-2">
+                    {{ applications.paginator.count }} application{{ applications.paginator.count|pluralize }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                {% if applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Job</th>
+                                    <th>Company</th>
+                                    <th>Applied On</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar me-2 bg-primary text-white rounded-circle">
+                                                    {{ application.student.user.first_name|slice:":1" }}{{ application.student.user.last_name|slice:":1" }}
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">{{ application.student.user.get_full_name }}</h6>
+                                                    <small class="text-muted">{{ application.student.department }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <h6 class="mb-0">{{ application.job.title }}</h6>
+                                            <small class="text-muted">{{ application.job.get_job_type_display }}</small>
+                                        </td>
+                                        <td>{{ application.job.company.company_name }}</td>
+                                        <td>{{ application.applied_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <span class="badge {% if application.status == 'applied' %}bg-primary
+                                                         {% elif application.status == 'under_review' %}bg-info
+                                                         {% elif application.status == 'shortlisted' %}bg-warning
+                                                         {% elif application.status == 'rejected' %}bg-danger
+                                                         {% elif application.status == 'selected' %}bg-success
+                                                         {% endif %}">
+                                                {{ application.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                        data-bs-toggle="modal" data-bs-target="#viewApplication{{ application.id }}">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                        data-bs-toggle="modal" data-bs-target="#updateStatus{{ application.id }}">
+                                                    <i class="fas fa-edit"></i> Update
+                                                </button>
+                                                {% if application.status == 'shortlisted' or application.status == 'under_review' %}
+                                                    <a href="{% url 'schedule_interview' application.id %}" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-calendar-alt"></i> Schedule
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <!-- View Application Modal -->
+                                            <div class="modal fade" id="viewApplication{{ application.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog modal-lg">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Application Details</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <h5>Student Information</h5>
+                                                                    <dl class="row">
+                                                                        <dt class="col-sm-4">Name</dt>
+                                                                        <dd class="col-sm-8">{{ application.student.user.get_full_name }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Email</dt>
+                                                                        <dd class="col-sm-8">{{ application.student.user.email }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Phone</dt>
+                                                                        <dd class="col-sm-8">{{ application.student.user.phone_number|default:"Not provided" }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Department</dt>
+                                                                        <dd class="col-sm-8">{{ application.student.department }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">CGPA</dt>
+                                                                        <dd class="col-sm-8">{{ application.student.cgpa }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Graduation</dt>
+                                                                        <dd class="col-sm-8">{{ application.student.year_of_graduation }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <h5>Job Information</h5>
+                                                                    <dl class="row">
+                                                                        <dt class="col-sm-4">Position</dt>
+                                                                        <dd class="col-sm-8">{{ application.job.title }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Company</dt>
+                                                                        <dd class="col-sm-8">{{ application.job.company.company_name }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Type</dt>
+                                                                        <dd class="col-sm-8">{{ application.job.get_job_type_display }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Location</dt>
+                                                                        <dd class="col-sm-8">{{ application.job.location }}</dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Status</dt>
+                                                                        <dd class="col-sm-8">
+                                                                            <span class="badge {% if application.status == 'applied' %}bg-primary
+                                                                                      {% elif application.status == 'under_review' %}bg-info
+                                                                                      {% elif application.status == 'shortlisted' %}bg-warning
+                                                                                      {% elif application.status == 'rejected' %}bg-danger
+                                                                                      {% elif application.status == 'selected' %}bg-success
+                                                                                      {% endif %}">
+                                                                                {{ application.get_status_display }}
+                                                                            </span>
+                                                                        </dd>
+                                                                        
+                                                                        <dt class="col-sm-4">Applied On</dt>
+                                                                        <dd class="col-sm-8">{{ application.applied_at|date:"M d, Y, h:i A" }}</dd>
+                                                                    </dl>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <hr>
+                                                            
+                                                            <h5>Cover Letter</h5>
+                                                            <div class="p-3 bg-light rounded">
+                                                                {{ application.cover_letter|linebreaks|default:"No cover letter provided." }}
+                                                            </div>
+                                                            
+                                                            {% if application.student.resume %}
+                                                                <div class="mt-3">
+                                                                    <h5>Resume</h5>
+                                                                    <a href="{{ application.student.resume.url }}" class="btn btn-outline-primary" target="_blank">
+                                                                        <i class="fas fa-file-pdf me-2"></i> View Resume
+                                                                    </a>
+                                                                </div>
+                                                            {% endif %}
+                                                            
+                                                            <hr>
+                                                            
+                                                            <h5>Interviews</h5>
+                                                            {% if application.interviews.exists %}
+                                                                <ul class="list-group">
+                                                                    {% for interview in application.interviews.all %}
+                                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                            <div>
+                                                                                <strong>{{ interview.get_interview_type_display }}</strong> -
+                                                                                {{ interview.date_time|date:"M d, Y, h:i A" }}
+                                                                                <br>
+                                                                                <small class="text-muted">Status: {{ interview.get_status_display }}</small>
+                                                                            </div>
+                                                                            <a href="{% url 'update_interview' interview.id %}" class="btn btn-sm btn-outline-primary">
+                                                                                Details
+                                                                            </a>
+                                                                        </li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            {% else %}
+                                                                <p class="text-muted">No interviews scheduled yet.</p>
+                                                                {% if application.status == 'shortlisted' %}
+                                                                    <a href="{% url 'schedule_interview' application.id %}" class="btn btn-sm btn-outline-success">
+                                                                        <i class="fas fa-calendar-alt me-1"></i> Schedule Interview
+                                                                    </a>
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Update Status Modal -->
+                                            <div class="modal fade" id="updateStatus{{ application.id }}" tabindex="-1" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Update Application Status</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form method="POST" action="{% url 'update_application' application.id %}">
+                                                            {% csrf_token %}
+                                                            <div class="modal-body">
+                                                                <p>Student: <strong>{{ application.student.user.get_full_name }}</strong></p>
+                                                                <p>Job: <strong>{{ application.job.title }}</strong></p>
+                                                                <p>Company: <strong>{{ application.job.company.company_name }}</strong></p>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <label for="status{{ application.id }}" class="form-label">Status</label>
+                                                                    <select id="status{{ application.id }}" name="status" class="form-select" required>
+                                                                        <option value="applied" {% if application.status == 'applied' %}selected{% endif %}>Applied</option>
+                                                                        <option value="under_review" {% if application.status == 'under_review' %}selected{% endif %}>Under Review</option>
+                                                                        <option value="shortlisted" {% if application.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                                                        <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                                                        <option value="selected" {% if application.status == 'selected' %}selected{% endif %}>Selected</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-primary">Update Status</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if applications.paginator.num_pages > 1 %}
+                        <div class="d-flex justify-content-center py-3">
+                            <nav aria-label="Applications pagination">
+                                <ul class="pagination">
+                                    {% if applications.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ applications.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="First">
+                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for num in applications.paginator.page_range %}
+                                        {% if applications.number == num %}
+                                            <li class="page-item active">
+                                                <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% elif num > applications.number|add:'-3' and num < applications.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if applications.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ applications.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ applications.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Last">
+                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="text-center p-5">
+                        <div class="display-1 text-muted">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h4 class="mt-3">No Applications Found</h4>
+                        <p class="text-muted">There are no applications matching your filter criteria.</p>
+                        <a href="{% url 'applications' %}" class="btn btn-primary mt-3">View All Applications</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

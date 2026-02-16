@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+
+{% block title %}Placement Statistics - Campus Placement System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i> Placement Statistics</h4>
+                    <div>
+                        {% if request.user.is_officer %}
+                            <a href="{% url 'create_season' %}" class="btn btn-light btn-sm me-2">
+                                <i class="fas fa-plus-circle me-1"></i> New Season
+                            </a>
+                            <a href="{% url 'update_statistics' %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-edit me-1"></i> Update Stats
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                {% if seasons %}
+                    <form method="GET" action="{% url 'statistics' %}" class="mb-4">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text">Placement Season</span>
+                                    <select name="season" class="form-select" onchange="this.form.submit()">
+                                        {% for season in seasons %}
+                                            <option value="{{ season.id }}" {% if selected_season.id == season.id %}selected{% endif %}>
+                                                {{ season.year }} {% if season.is_active %}(Current){% endif %}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    {% if selected_season %}
+                        <div class="season-info mb-4">
+                            <h5>{{ selected_season.year }} {% if selected_season.is_active %}<span class="badge bg-success">Current Season</span>{% endif %}</h5>
+                            <p>Duration: {{ selected_season.start_date|date:"M d, Y" }} to {{ selected_season.end_date|date:"M d, Y" }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        {% if department_stats %}
+                            {% with total_students=0 total_placed=0 %}
+                                {% for stat in department_stats %}
+                                    {% with total_students=total_students|add:stat.total_students total_placed=total_placed|add:stat.placed_students %}
+                                    {% endwith %}
+                                {% endfor %}
+                                
+                                <!-- Calculate totals outside the loop -->
+                                {% with total_percentage=total_placed|percent:total_students %}
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card h-100 bg-light border-0">
+                                            <div class="card-body text-center">
+                                                <h6 class="text-muted mb-2">Total Students</h6>
+                                                <h2 class="mb-0">{{ total_students }}</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card h-100 bg-light border-0">
+                                            <div class="card-body text-center">
+                                                <h6 class="text-muted mb-2">Students Placed</h6>
+                                                <h2 class="mb-0">{{ total_placed }}</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card h-100 bg-light border-0">
+                                            <div class="card-body text-center">
+                                                <h6 class="text-muted mb-2">Placement Rate</h6>
+                                                <h2 class="mb-0">{{ total_percentage|floatformat:1 }}%</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% with highest_package=0 %}
+                                        {% for stat in department_stats %}
+                                            {% if stat.highest_package > highest_package %}
+                                                {% with highest_package=stat.highest_package %}
+                                                {% endwith %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100 bg-light border-0">
+                                                <div class="card-body text-center">
+                                                    <h6 class="text-muted mb-2">Highest Package</h6>
+                                                    <h2 class="mb-0">${{ highest_package|floatformat:0 }}K</h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endwith %}
+                                {% endwith %}
+                            {% endwith %}
+                        {% else %}
+                            <div class="col-12">
+                                <div class="alert alert-info mb-0">
+                                    <i class="fas fa-info-circle me-2"></i> No statistics available for this placement season.
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Department-wise Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Department-wise Placement Statistics</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if department_stats %}
+                                        <div class="table-responsive">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Department</th>
+                                                        <th>Students</th>
+                                                        <th>Placed</th>
+                                                        <th>Rate</th>
+                                                        <th>Avg. Package</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for stat in department_stats %}
+                                                        <tr>
+                                                            <td>{{ stat.department }}</td>
+                                                            <td>{{ stat.total_students }}</td>
+                                                            <td>{{ stat.placed_students }}</td>
+                                                            <td>
+                                                                <div class="progress" style="height: 10px;">
+                                                                    <div class="progress-bar bg-success" role="progressbar" 
+                                                                         style="width: {{ stat.placement_percentage }}%;" 
+                                                                         aria-valuenow="{{ stat.placement_percentage }}" 
+                                                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                                                </div>
+                                                                <small>{{ stat.placement_percentage|floatformat:1 }}%</small>
+                                                            </td>
+                                                            <td>
+                                                                {% if stat.average_package %}
+                                                                    ${{ stat.average_package|floatformat:0 }}K
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-center p-4">
+                                            <div class="text-muted mb-3">
+                                                <i class="fas fa-chart-pie fa-3x"></i>
+                                            </div>
+                                            <p>No statistics available for this placement season.</p>
+                                            {% if request.user.is_officer %}
+                                                <a href="{% url 'update_statistics' %}" class="btn btn-primary">Add Statistics</a>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Placement Rate</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if department_stats %}
+                                        <canvas id="placementRateChart" height="220"></canvas>
+                                    {% else %}
+                                        <div class="text-center p-4">
+                                            <div class="text-muted mb-3">
+                                                <i class="fas fa-chart-bar fa-3x"></i>
+                                            </div>
+                                            <p>No data to display</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Job Distribution and Monthly Job Postings -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4 mb-md-0">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Job Type Distribution</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if job_type_distribution %}
+                                        <canvas id="jobTypeChart" height="200"></canvas>
+                                    {% else %}
+                                        <div class="text-center p-4">
+                                            <div class="text-muted mb-3">
+                                                <i class="fas fa-chart-pie fa-3x"></i>
+                                            </div>
+                                            <p>No job data to display</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Monthly Job Postings</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if monthly_jobs %}
+                                        <canvas id="monthlyJobsChart" height="200"></canvas>
+                                    {% else %}
+                                        <div class="text-center p-4">
+                                            <div class="text-muted mb-3">
+                                                <i class="fas fa-chart-line fa-3x"></i>
+                                            </div>
+                                            <p>No monthly data to display</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center p-5">
+                        <div class="display-1 text-muted">
+                            <i class="fas fa-chart-area"></i>
+                        </div>
+                        <h4 class="mt-3">No Placement Seasons</h4>
+                        <p class="text-muted">There are no placement seasons created yet.</p>
+                        {% if request.user.is_officer %}
+                            <a href="{% url 'create_season' %}" class="btn btn-primary mt-3">Create First Season</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Placement Rate Chart
+        const placementRateChartEl = document.getElementById('placementRateChart');
+        if (placementRateChartEl) {
+            new Chart(placementRateChartEl, {
+                type: 'horizontalBar',
+                data: {
+                    labels: [
+                        {% for stat in department_stats %}
+                            '{{ stat.department }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Placement Rate (%)',
+                        data: [
+                            {% for stat in department_stats %}
+                                {{ stat.placement_percentage|floatformat:1 }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: '#28a745',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        xAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+        
+        // Job Type Distribution Chart
+        const jobTypeChartEl = document.getElementById('jobTypeChart');
+        if (jobTypeChartEl) {
+            new Chart(jobTypeChartEl, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        {% for item in job_type_distribution %}
+                            '{% if item.job_type == "full_time" %}Full Time{% elif item.job_type == "internship" %}Internship{% elif item.job_type == "part_time" %}Part Time{% endif %}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        data: [
+                            {% for item in job_type_distribution %}
+                                {{ item.count }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: [
+                            '#007bff',
+                            '#fd7e14',
+                            '#20c997'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            });
+        }
+        
+        // Monthly Jobs Chart
+        const monthlyJobsChartEl = document.getElementById('monthlyJobsChart');
+        if (monthlyJobsChartEl) {
+            new Chart(monthlyJobsChartEl, {
+                type: 'line',
+                data: {
+                    labels: [
+                        {% for item in monthly_jobs %}
+                            '{% if item.month == 1 %}Jan{% elif item.month == 2 %}Feb{% elif item.month == 3 %}Mar{% elif item.month == 4 %}Apr{% elif item.month == 5 %}May{% elif item.month == 6 %}Jun{% elif item.month == 7 %}Jul{% elif item.month == 8 %}Aug{% elif item.month == 9 %}Sep{% elif item.month == 10 %}Oct{% elif item.month == 11 %}Nov{% elif item.month == 12 %}Dec{% endif %}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Job Postings',
+                        data: [
+                            {% for item in monthly_jobs %}
+                                {{ item.count }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderColor: '#0d6efd',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#0d6efd',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                stepSize: 1
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-item {
+        border-left: 4px solid #f8f9fa;
+        padding-left: 15px;
+    }
+    
+    .stat-item:nth-child(1) {
+        border-left-color: #6c757d;
+    }
+    
+    .stat-item:nth-child(2) {
+        border-left-color: #28a745;
+    }
+    
+    .stat-item:nth-child(3) {
+        border-left-color: #17a2b8;
+    }
+    
+    .stat-item:nth-child(4) {
+        border-left-color: #ffc107;
+    }
+</style>
+{% endblock %}

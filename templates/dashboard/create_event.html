@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}Schedule Event - Campus Placement System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-calendar-plus me-2"></i> Schedule New Event</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">Event Title</label>
+                        <input type="text" name="{{ form.title.name }}" id="{{ form.title.id_for_label }}" 
+                               class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
+                               value="{{ form.title.value|default:'' }}" required>
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                                  class="form-control {% if form.description.errors %}is-invalid{% endif %}" 
+                                  rows="4" required>{{ form.description.value|default:'' }}</textarea>
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.date_time.id_for_label }}" class="form-label">Date and Time</label>
+                            <input type="datetime-local" name="{{ form.date_time.name }}" id="{{ form.date_time.id_for_label }}" 
+                                   class="form-control {% if form.date_time.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.date_time.value|date:'Y-m-d\TH:i' }}" required>
+                            {% if form.date_time.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.date_time.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                            <input type="text" name="{{ form.location.name }}" id="{{ form.location.id_for_label }}" 
+                                   class="form-control {% if form.location.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.location.value|default:'' }}" placeholder="e.g., Auditorium, Online, Meeting Room, etc." required>
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.location.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.company.id_for_label }}" class="form-label">Associated Company (Optional)</label>
+                        <select name="{{ form.company.name }}" id="{{ form.company.id_for_label }}" 
+                                class="form-select {% if form.company.errors %}is-invalid{% endif %}">
+                            <option value="">No specific company</option>
+                            {% for choice in form.company.field.queryset %}
+                                <option value="{{ choice.id }}" 
+                                        {% if form.company.value|stringformat:'i' == choice.id|stringformat:'i' %}selected{% endif %}>
+                                    {{ choice.company_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if form.company.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.company.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Select a company if this event is related to a specific company (e.g., pre-placement talk)</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="{{ form.is_active.name }}" id="{{ form.is_active.id_for_label }}" 
+                                   class="form-check-input {% if form.is_active.errors %}is-invalid{% endif %}"
+                                   {% if form.is_active.value %}checked{% endif %}>
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                Make event visible
+                            </label>
+                            {% if form.is_active.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.is_active.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> This event will be visible to all users on the placement portal.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'officer_dashboard' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Schedule Event</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

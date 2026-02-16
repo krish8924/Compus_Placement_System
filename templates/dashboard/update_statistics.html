@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Placement Statistics - Campus Placement System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-chart-line me-2"></i> Update Placement Statistics</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="season-info mb-4">
+                    <h5>Season: {{ season.year }} {% if season.is_active %}<span class="badge bg-success">Current Season</span>{% endif %}</h5>
+                    <p>Duration: {{ season.start_date|date:"M d, Y" }} to {{ season.end_date|date:"M d, Y" }}</p>
+                    
+                    {% if department %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> Updating statistics for <strong>{{ department }}</strong> department.
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    {% if not department %}
+                        <div class="mb-3">
+                            <label for="{{ form.department.id_for_label }}" class="form-label">Department</label>
+                            <input type="text" name="{{ form.department.name }}" id="{{ form.department.id_for_label }}" 
+                                   class="form-control {% if form.department.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.department.value|default:'' }}" required>
+                            {% if form.department.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.department.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Enter the department name (e.g., Computer Science, Electrical Engineering)</div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.total_students.id_for_label }}" class="form-label">Total Students</label>
+                            <input type="number" name="{{ form.total_students.name }}" id="{{ form.total_students.id_for_label }}" 
+                                   class="form-control {% if form.total_students.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.total_students.value|default:0 }}" min="0" required>
+                            {% if form.total_students.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.total_students.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.placed_students.id_for_label }}" class="form-label">Placed Students</label>
+                            <input type="number" name="{{ form.placed_students.name }}" id="{{ form.placed_students.id_for_label }}" 
+                                   class="form-control {% if form.placed_students.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.placed_students.value|default:0 }}" min="0" required>
+                            {% if form.placed_students.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.placed_students.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.highest_package.id_for_label }}" class="form-label">Highest Package (in thousands, e.g., 120 for $120K)</label>
+                            <input type="number" step="0.01" name="{{ form.highest_package.name }}" id="{{ form.highest_package.id_for_label }}" 
+                                   class="form-control {% if form.highest_package.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.highest_package.value|default:'' }}">
+                            {% if form.highest_package.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.highest_package.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Leave blank if not applicable yet</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.average_package.id_for_label }}" class="form-label">Average Package (in thousands, e.g., 75 for $75K)</label>
+                            <input type="number" step="0.01" name="{{ form.average_package.name }}" id="{{ form.average_package.id_for_label }}" 
+                                   class="form-control {% if form.average_package.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.average_package.value|default:'' }}">
+                            {% if form.average_package.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.average_package.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Leave blank if not applicable yet</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.total_companies_visited.id_for_label }}" class="form-label">Total Companies Visited</label>
+                        <input type="number" name="{{ form.total_companies_visited.name }}" id="{{ form.total_companies_visited.id_for_label }}" 
+                               class="form-control {% if form.total_companies_visited.errors %}is-invalid{% endif %}" 
+                               value="{{ form.total_companies_visited.value|default:0 }}" min="0" required>
+                        {% if form.total_companies_visited.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.total_companies_visited.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Make sure the numbers are accurate. These statistics will be displayed on the statistics dashboard.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'statistics' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Statistics</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

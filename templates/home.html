@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block title %}Campus Placement System - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-4 fw-bold mb-4 text-primary">Welcome to Campus Placement System</h1>
+                <p class="lead mb-4">Connecting talented students with top-tier employers for a brighter future.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-4">Sign In</a>
+                    {% else %}
+                        {% if user.is_student %}
+                            <a href="{% url 'student_dashboard' %}" class="btn btn-primary btn-lg px-4 me-md-2">My Dashboard</a>
+                            <a href="{% url 'job_list' %}" class="btn btn-outline-secondary btn-lg px-4">Browse Jobs</a>
+                        {% elif user.is_company %}
+                            <a href="{% url 'company_dashboard' %}" class="btn btn-primary btn-lg px-4 me-md-2">Company Dashboard</a>
+                            <a href="{% url 'post_job' %}" class="btn btn-outline-secondary btn-lg px-4">Post Job</a>
+                        {% elif user.is_officer %}
+                            <a href="{% url 'officer_dashboard' %}" class="btn btn-primary btn-lg px-4 me-md-2">Admin Dashboard</a>
+                            <a href="{% url 'statistics' %}" class="btn btn-outline-secondary btn-lg px-4">View Statistics</a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Key Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                            <i class="fas fa-user-graduate fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">For Students</h5>
+                        <p class="card-text">Create a professional profile, upload your resume, apply for jobs, and track your applications all in one place.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                            <i class="fas fa-building fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">For Companies</h5>
+                        <p class="card-text">Post job openings, review applications, schedule interviews, and find the perfect candidates for your organization.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                        <h5 class="card-title">For Placement Officers</h5>
+                        <p class="card-text">Manage the entire placement process, track statistics, and ensure successful outcomes for students and employers.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="step-number rounded-circle bg-primary text-white mx-auto mb-3">1</div>
+                        <h5>Create Account</h5>
+                        <p class="text-muted">Register as a student, company, or placement officer.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="step-number rounded-circle bg-primary text-white mx-auto mb-3">2</div>
+                        <h5>Complete Profile</h5>
+                        <p class="text-muted">Fill in your details and upload necessary documents.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="step-number rounded-circle bg-primary text-white mx-auto mb-3">3</div>
+                        <h5>Apply/Post Jobs</h5>
+                        <p class="text-muted">Students apply for jobs or companies post openings.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="step-number rounded-circle bg-primary text-white mx-auto mb-3">4</div>
+                        <h5>Get Placed</h5>
+                        <p class="text-muted">Schedule interviews, receive offers, and secure your future.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Placement Success</h2>
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="counter text-primary fw-bold">500+</h3>
+                        <p class="mb-0">Companies</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="counter text-primary fw-bold">2000+</h3>
+                        <p class="mb-0">Students Placed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="counter text-primary fw-bold">92%</h3>
+                        <p class="mb-0">Placement Rate</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="counter text-primary fw-bold">$85K</h3>
+                        <p class="mb-0">Avg. Package</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Success Stories</h2>
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="flex-shrink-0">
+                                <div class="avatar bg-primary rounded-circle text-white">
+                                    <span>JS</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-0">Vishal Rajput</h5>
+                                <p class="text-muted mb-0">Software Engineer at Google</p>
+                            </div>
+                        </div>
+                        <p class="mb-0">"The campus placement system made it incredibly easy to find and apply for my dream job. The interview scheduling and preparation resources were invaluable to my success."</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="flex-shrink-0">
+                                <div class="avatar bg-primary rounded-circle text-white">
+                                    <span>AR</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="mb-0">Vaidhnavi Patil</h5>
+                                <p class="text-muted mb-0">HR Manager at Microsoft</p>
+                            </div>
+                        </div>
+                        <p class="mb-0">"As an employer, this platform has streamlined our recruitment process. We've found exceptional talent and established a strong presence on campus."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-primary text-white">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to start your journey?</h2>
+        <p class="lead mb-4">Join our platform today and connect with opportunities that shape your future.</p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'register' %}" class="btn btn-light btn-lg px-5">Register Now</a>
+        {% else %}
+            <a href="{% url 'job_list' %}" class="btn btn-light btn-lg px-5">Explore Opportunities</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animation for counter statistics
+    document.addEventListener('DOMContentLoaded', function() {
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            counter.innerText = '0';
+            
+            const updateCounter = () => {
+                const target = +counter.innerText.replace(/[^\d]/g, '');
+                const text = counter.textContent;
+                const suffix = text.replace(/[\d,]/g, '');
+                const final = text.match(/[\d,]+/)[0].replace(/,/g, '');
+                const c = +final;
+                const increment = c / 100;
+                
+                if (target < c) {
+                    counter.innerText = Math.ceil(target + increment) + suffix;
+                    setTimeout(updateCounter, 10);
+                } else {
+                    counter.innerText = final + suffix;
+                }
+            };
+            
+            updateCounter();
+        });
+    });
+</script>
+{% endblock %}

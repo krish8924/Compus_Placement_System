@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{# {% load custom_filters %} #}
+
+{% block title %}Student Dashboard - Campus Placement System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Sidebar - Profile Overview -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4 text-center">
+                <div class="avatar-circle bg-primary text-white mx-auto mb-3">
+                    {{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}
+                </div>
+                <h4 class="mb-1">{{ request.user.get_full_name }}</h4>
+                <p class="text-muted mb-3">{{ student.department }} | {{ student.roll_number }}</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'student_profile' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-user-edit me-2"></i> Edit Profile
+                    </a>
+                    <a href="{% url 'resume_builder' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-file-alt me-2"></i> Manage Resume
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer bg-light p-3">
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <div class="h5 mb-0">{{ student.cgpa|default:"N/A" }}</div>
+                        <small class="text-muted">CGPA</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h5 mb-0">{{ application_count }}</div>
+                        <small class="text-muted">Applications</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                        <input type="text" class="form-control" value="{{ request.user.email }}" readonly>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Phone Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                        <input type="text" class="form-control" value="{{ request.user.phone_number|default:'Not provided' }}" readonly>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small text-muted">Graduation Year</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
+                        <input type="text" class="form-control" value="{{ student.year_of_graduation }}" readonly>
+                    </div>
+                </div>
+                
+                {% if student.linkedin_profile or student.github_profile %}
+                    <div class="social-links mt-4">
+                        {% if student.linkedin_profile %}
+                            <a href="{{ student.linkedin_profile }}" target="_blank" class="btn btn-outline-primary mb-2 w-100">
+                                <i class="fab fa-linkedin me-2"></i> LinkedIn Profile
+                            </a>
+                        {% endif %}
+                        {% if student.github_profile %}
+                            <a href="{{ student.github_profile }}" target="_blank" class="btn btn-outline-dark mb-2 w-100">
+                                <i class="fab fa-github me-2"></i> GitHub Profile
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Skills</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if student.skills %}
+                    <div class="skills-tags">
+                        <!-- Display skills as a simple text for now -->
+                        <p>{{ student.skills }}</p>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No skills added yet. Update your profile to add skills.</p>
+                    <a href="{% url 'student_profile' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus-circle me-1"></i> Add Skills
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-primary text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Applications</h6>
+                                <h3 class="mb-0">{{ application_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light p-2 text-center">
+                        <a href="{% url 'applications' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-warning text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Interviews</h6>
+                                <h3 class="mb-0">{{ interview_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light p-2 text-center">
+                        <a href="{% url 'interviews' %}" class="btn btn-sm btn-link text-decoration-none">View All</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-box bg-success text-white rounded-circle p-3 me-3">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">Job Matches</h6>
+                                <h3 class="mb-0">{{ matching_jobs|length }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light p-2 text-center">
+                        <a href="{% url 'job_list' %}" class="btn btn-sm btn-link text-decoration-none">Browse Jobs</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Upcoming Interviews -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Upcoming Interviews</h5>
+                <a href="{% url 'interviews' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if upcoming_interviews %}
+                    <div class="list-group list-group-flush">
+                        {% for interview in upcoming_interviews %}
+                            <a href="{% url 'interviews' %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ interview.application.job.title }} - {{ interview.application.job.company.company_name }}</h6>
+                                    <small class="text-muted">{{ interview.date_time|date:"M d" }}</small>
+                                </div>
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="mb-1">
+                                        <span class="badge {% if interview.interview_type == 'online' %}bg-info text-dark
+                                                     {% elif interview.interview_type == 'in_person' %}bg-secondary
+                                                     {% else %}bg-light text-dark{% endif %}">
+                                            {{ interview.get_interview_type_display }}
+                                        </span>
+                                        {{ interview.date_time|date:"h:i A" }}
+                                    </p>
+                                    <small class="text-primary">View Details</small>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center p-4">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-calendar-alt fa-3x"></i>
+                        </div>
+                        <p>You don't have any upcoming interviews.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-sm btn-primary">Find Jobs</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Applications -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Applications</h5>
+                <a href="{% url 'applications' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job</th>
+                                    <th>Company</th>
+                                    <th>Applied On</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                    <tr>
+                                        <td>{{ application.job.title }}</td>
+                                        <td>{{ application.job.company.company_name }}</td>
+                                        <td>{{ application.applied_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <span class="badge {% if application.status == 'applied' %}bg-primary
+                                                         {% elif application.status == 'under_review' %}bg-info
+                                                         {% elif application.status == 'shortlisted' %}bg-warning
+                                                         {% elif application.status == 'rejected' %}bg-danger
+                                                         {% elif application.status == 'selected' %}bg-success
+                                                         {% else %}bg-secondary{% endif %}">
+                                                {{ application.get_status_display }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center p-4">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-file-alt fa-3x"></i>
+                        </div>
+                        <p>You haven't applied to any jobs yet.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-sm btn-primary">Browse Jobs</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recommended Jobs -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recommended Jobs</h5>
+                <a href="{% url 'job_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                {% if matching_jobs %}
+                    <div class="list-group list-group-flush">
+                        {% for job in matching_jobs %}
+                            <a href="{% url 'job_detail' job.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ job.title }}</h6>
+                                    <small class="text-muted">{{ job.created_at|date:"M d" }}</small>
+                                </div>
+                                <p class="mb-1 text-muted">{{ job.company.company_name }}</p>
+                                <div class="d-flex w-100 justify-content-between">
+                                    <p class="mb-1">
+                                        <span class="badge bg-light text-dark me-2">{{ job.get_job_type_display }}</span>
+                                        <span class="badge bg-light text-dark">{{ job.location }}</span>
+                                    </p>
+                                    <small class="text-primary">View Details</small>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center p-4">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-search fa-3x"></i>
+                        </div>
+                        <p>No job recommendations available at this time.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-sm btn-primary">Browse All Jobs</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
