@@ -78,16 +78,14 @@ WSGI_APPLICATION = 'Collegepro.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-   'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'job_portal_db1',
-        'USER': 'root',
-        'PASSWORD': 'root',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-    }
+    'default': dj_database_url.config(
+        default='mysql://USER:PASSWORD@HOST:PORT/DATABASE_NAME'
+    )
 }
+
 
 
 # Password validation
